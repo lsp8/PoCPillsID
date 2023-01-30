@@ -1,28 +1,46 @@
-import React from 'react';
-import {Button, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import React, {useRef, useState} from 'react';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
-import {Camera, CameraType} from 'expo-camera';
-import {useState} from 'react';
+import {Camera} from 'expo-camera';
+import {
+  getModel,
+  convertBase64ToTensor,
+  startPrediction,
+} from '../../helpers/tensor-helper';
+import {cropPicture} from '../../helpers/image-helper';
 
 export default function App() {
-  const [type, setType] = useState(CameraType.back);
-  const [permission, requestPermission] = Camera.useCameraPermissions();
+  const RESULT_MAPPING = ['Filled', 'Empty'];
+  const cameraRef = useRef();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [permission, setPermission] = Camera.useCameraPermissions();
+  const [camera, setCamera] = useState(false);
 
-  function toggleCameraType() {
-    setType(current =>
-      current === CameraType.back ? CameraType.front : CameraType.back,
-    );
-  }
+  const handleCamera = async () => {
+    const {status} = await Camera.requestCameraPermissionsAsync();
+    if (status === 'granted') {
+      setCamera(!camera);
+    } else {
+      console.log('Status:', status);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Camera type={type} style={styles.camera}>
-        <View>
-          <TouchableOpacity style={styles.camButton} onPress={toggleCameraType}>
-            <Text style={styles.camButtonText}>Flip Camera</Text>
-          </TouchableOpacity>
-        </View>
-      </Camera>
+      {camera && (
+        <Camera
+          ref={cameraRef}
+          style={styles.camera}
+          type={Camera.Constants.Type.back}
+          autoFocus={true}
+        />
+      )}
+
+      <View>
+        <TouchableOpacity style={styles.camButton} onPress={handleCamera}>
+          <Text style={styles.camButtonText}>Câmera</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -31,11 +49,9 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#09035c',
     flex: 1,
-    padding: 10,
   },
   camera: {
-    height: '60%',
-    justifyContent: 'flex-end',
+    height: 300,
   },
   camButton: {
     borderRadius: 15,

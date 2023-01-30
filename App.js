@@ -6,8 +6,8 @@ import {
   getModel,
   convertBase64ToTensor,
   startPrediction,
-} from '../../helpers/tensor-helper';
-import {cropPicture} from '../../helpers/image-helper';
+} from './src/helpers/tensor-helper';
+import {cropPicture} from './src/helpers/image-helper';
 
 export default function App() {
   const RESULT_MAPPING = ['Filled', 'Empty'];
